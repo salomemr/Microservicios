@@ -1,0 +1,482 @@
+openapi: 3.0.0  # Versión de OpenAPI
+
+info:  # Información general sobre la API
+  title: Flask Authentication API  # Título de la API
+  description: An API for user authentication and password recovery  # Descripción de la API
+  version: 1.0.0  # Versión de la API
+
+paths:
+  # Ruta del endpoint: /login
+  /inicio_sesion:
+    post:
+     # Método HTTP utilizado: POST
+      summary: Inicio de sesion usuario 
+      # Resumen del propósito del endpoint
+      description: Inicia sesión y devuelve un token JWT en caso de éxito
+       # Descripción más detallada del propósito del endpoint
+      requestBody:
+      # El cuerpo de la solicitud es obligatorio
+        required: true
+        content:
+         # Tipo de contenido de la solicitud: JSON
+          application/json:
+            schema:
+              type: object
+               # El cuerpo de la solicitud es un objeto JSON
+              properties:
+                email:
+                  # La propiedad 'email' es de tipo cadena (string)
+                  type: string
+                  format: email # Se espera que el valor tenga formato de dirección de correo electrónico
+                  # Ejemplo de cómo debería verse la propiedad en la solicitud
+                  example: user@example.com 
+                password:
+                  # La propiedad 'password' es de tipo cadena (string)
+                  type: string
+                  # Ejemplo de cómo debería verse la propiedad en la solicitud
+                  example: secretpassword
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          # Descripción de la respuesta para el código de estado 200 (OK)
+          description: Inicio de sesión exitoso
+          content:
+            # Tipo de contenido de la respuesta: JSON
+            application/json:
+              schema:
+                # El cuerpo de la respuesta es un objeto JSON
+                type: object
+                properties:
+                  access_token:
+                    # La propiedad 'access_token' es de tipo cadena (string)
+                    type: string
+                    description: Token JWT para autenticación posterior
+                    # Ejemplo de cómo debería verse la propiedad en la respuesta
+                    example: eyJhbGciOiJIUzI1NiIsInR...
+        '401':
+          # Descripción de la respuesta para el código de estado 401 (No autorizado)
+          description: Credenciales inválidas
+          content:
+            application/json:
+              # Tipo de contenido de la respuesta: JSON
+              schema:
+                # El cuerpo de la respuesta es un objeto JSON
+                type: object
+                properties:
+                  mensaje:
+                    # La propiedad 'mensaje' es de tipo cadena (string)
+                    type: string
+                    example: Credenciales inválidas
+  
+  #   # Ruta del endpoint: /cambiar contraseña
+  /cambio_contrasena:
+    post:  # Método HTTP utilizado: POST
+     # Resumen del propósito del endpoint
+      summary: Cambiar contraseña de usuario autenticado
+      security:
+        - jwt: [] #  Indica que se requiere un token JWT para acceder al endpoint
+      requestBody: # Define el cuerpo de la solicitud requerido para este endpoint
+        required: true
+        # El cuerpo de la solicitud es obligatorio
+        content:
+          application/json:
+          # Tipo de contenido de la solicitud: JSON
+            schema:
+              type: object
+              # El cuerpo de la solicitud es un objeto JSON
+              properties:
+                new_password:
+                  type: string
+                  # La propiedad 'new_password' es de tipo cadena (string)
+                  description: Nueva contraseña del usuario # Descripción de la propiedad
+                  example: nueva_contraseña_segura123  # Ejemplo de cómo debería verse la propiedad en la solicitud
+      responses:
+        # Descripción de la respuesta para el código de estado 200 (OK)
+        '200':
+          description: Contraseña actualizada exitosamente
+          content:
+            application/json:
+              # Tipo de contenido de la respuesta: JSON
+              example:
+                mensaje: Contraseña actualizada exitosamente
+        # Ejemplo de cómo debería verse la respuesta en formato JSON
+        '401':
+          description: No autorizado (token JWT inválido o caducado) # Descripción de la respuesta para el código de estado 401 (No autorizado)
+        '500':
+          description: Error en el servidor  # Descripción de la respuesta para el código de estado 500 (Error en el servidor)
+
+  # Ruta del endpoint: /recuperar_contra
+  # Método HTTP utilizado: POST
+  /recuperacion_contrasena:
+    post:
+      # Resumen del propósito del endpoint
+      summary: Recuperar contraseña del usuario
+      # Descripción más detallada del propósito del endpoint
+      description: Genera un token de recuperación de contraseña y lo devuelve al usuario.
+      
+      
+      requestBody:
+        required: true
+        # El cuerpo de la solicitud es obligatorio
+        content:
+          application/json:
+            # Tipo de contenido de la solicitud: JSON
+            schema:
+              type: object
+              # El cuerpo de la solicitud es un objeto JSON
+              properties:
+                email:
+                  type: string
+                  # La propiedad 'email' es de tipo cadena (string)
+                  example: user@example.com
+                  # Ejemplo de cómo debería verse la propiedad en la solicitud
+              required:
+                - email
+                # 'email' es el único campo requerido en la solicitud
+      
+      responses:
+        '200':
+          description: Token de recuperación generado
+          # Descripción de la respuesta para el código de estado 200 (OK)
+          content:
+            application/json:
+              # Tipo de contenido de la respuesta: JSON
+              schema:
+                type: object
+                # El cuerpo de la respuesta es un objeto JSON
+                properties:
+                  mensaje:
+                    type: string
+                    # La propiedad 'mensaje' es de tipo cadena (string)
+                    example: Se ha generado un token de recuperación
+                  token:
+                    type: string
+                    # La propiedad 'token' es de tipo cadena (string)
+                    example: abcdefghijklmnop123456
+                    # Ejemplo de cómo debería verse la propiedad en la respuesta
+        '500':
+          description: Error en el servidor
+          # Descripción de la respuesta para el código de estado 500 (Error en el servidor)
+
+  # Ruta del endpoint: /restablecimiento_contrasena
+  /restablecimiento_contrasena:
+    post:
+      # Método HTTP utilizado: POST
+      summary: Restablecer contraseña del usuario
+      # Resumen del propósito del endpoint
+      description: Restablece la contraseña del usuario utilizando un token de recuperación.
+      # Descripción más detallada del propósito del endpoint
+      
+      requestBody:
+        required: true
+        # El cuerpo de la solicitud es obligatorio
+        content:
+          application/json:
+            # Tipo de contenido de la solicitud: JSON
+            schema:
+              type: object
+              # El cuerpo de la solicitud es un objeto JSON
+              properties:
+                email:
+                  type: string
+                  # La propiedad 'email' es de tipo cadena (string)
+                  example: user@example.com
+                  # Ejemplo de cómo debería verse la propiedad en la solicitud
+                new_password:
+                  type: string
+                  # La propiedad 'new_password' es de tipo cadena (string)
+                  example: new_secure_password123
+                  # Ejemplo de cómo debería verse la propiedad en la solicitud
+                reset_token:
+                  type: string
+                  # La propiedad 'reset_token' es de tipo cadena (string)
+                  example: abcdefghijklmnop123456
+                  # Ejemplo de cómo debería verse la propiedad en la solicitud
+              required:
+                - email
+                - new_password
+                - reset_token
+                # Todos los campos son requeridos en la solicitud
+      
+      responses:
+        '200':
+          description: Contraseña restablecida exitosamente
+          # Descripción de la respuesta para el código de estado 200 (OK)
+          content:
+            application/json:
+              # Tipo de contenido de la respuesta: JSON
+              schema:
+                type: object
+                # El cuerpo de la respuesta es un objeto JSON
+                properties:
+                  mensaje:
+                    type: string
+                    # La propiedad 'mensaje' es de tipo cadena (string)
+                    example: Contrasena actualizada exitosamente
+                  # No es necesario agregar más propiedades ya que el restablecimiento fue exitoso
+        '400':
+          description: Token de recuperación inválido, expirado o no encontrado
+          # Descripción de la respuesta para el código de estado 400 (Solicitud incorrecta)
+          content:
+            application/json:
+              # Tipo de contenido de la respuesta: JSON
+              schema:
+                type: object
+                # El cuerpo de la respuesta es un objeto JSON
+                properties:
+                  mensaje:
+                    type: string
+                    # La propiedad 'mensaje' es de tipo cadena (string)
+                    example: Token de recuperacion invalido o expirado
+                    # Ejemplo de cómo debería verse la propiedad en la respuesta
+                  # No es necesario agregar más propiedades ya que se trata de un error
+        '500':
+          description: Error en el servidor
+          # Descripción de la respuesta para el código de estado 500 (Error en el servidor)
+
+  # Ruta del endpoint: /users
+  /users:
+    get:
+      # Método HTTP utilizado: GET
+      summary: Listar usuarios paginados
+      # Resumen del propósito del endpoint
+      description: Recupera una lista de usuarios paginados de la base de datos.
+      # Descripción más detallada del propósito del endpoint
+      
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Número de página para la paginación
+        - name: size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+          description: Tamaño de página para la paginación
+      
+      responses:
+        '200':
+          description: Lista de usuarios paginada
+          # Descripción de la respuesta para el código de estado 200 (OK)
+          content:
+            application/json:
+              # Tipo de contenido de la respuesta: JSON
+              example:
+                - id: 1
+                  username: usuario1
+                  email: usuario1@example.com
+                - id: 2
+                  username: usuario2
+                  email: usuario2@example.com
+                  # Ejemplo de cómo debería verse la respuesta en formato JSON
+
+  # Ruta del endpoint: /registro
+  /registro:
+    post:
+      # Método HTTP utilizado: POST
+      summary: Registrar nuevo usuario
+      # Resumen del propósito del endpoint
+      description: Registra un nuevo usuario en la base de datos.
+      # Descripción más detallada del propósito del endpoint
+      
+      requestBody:
+        required: true
+        # El cuerpo de la solicitud es obligatorio
+        content:
+          application/json:
+            # Tipo de contenido de la solicitud: JSON
+            schema:
+              type: object
+              # El cuerpo de la solicitud es un objeto JSON
+              properties:
+                username:
+                  type: string
+                  # La propiedad 'username' es de tipo cadena (string)
+                  example: nuevo_usuario
+                  # Ejemplo de cómo debería verse la propiedad en la solicitud
+                password:
+                  type: string
+                  # La propiedad 'password' es de tipo cadena (string)
+                  example: nueva_contraseña_segura123
+                  # Ejemplo de cómo debería verse la propiedad en la solicitud
+                email:
+                  type: string
+                  # La propiedad 'email' es de tipo cadena (string)
+                  format: email
+                  # Se espera que el valor tenga formato de dirección de correo electrónico
+                  example: user@example.com
+                  # Ejemplo de cómo debería verse la propiedad en la solicitud
+              required:
+                - username
+                - password
+                - email
+                # Todos los campos son requeridos en la solicitud
+      
+      responses:
+        '201':
+          description: Usuario registrado exitosamente
+          # Descripción de la respuesta para el código de estado 201 (Created)
+          content:
+            application/json:
+              # Tipo de contenido de la respuesta: JSON
+              schema:
+                type: object
+                # El cuerpo de la respuesta es un objeto JSON
+                properties:
+                  mensaje:
+                    type: string
+                    # La propiedad 'mensaje' es de tipo cadena (string)
+                    example: Usuario registrado exitosamente
+                  # No es necesario agregar más propiedades ya que el registro fue exitoso
+        '500':
+          description: Error en el servidor
+          # Descripción de la respuesta para el código de estado 500 (Error en el servidor)
+
+
+  # Ruta del endpoint: /users/{user_id}
+  /users/{user_id}:
+    get:
+      # Método HTTP utilizado: GET
+      summary: Obtener detalles de usuario
+      # Resumen del propósito del endpoint
+      description: Recupera los detalles de un usuario específico según su ID.
+      # Descripción más detallada del propósito del endpoint
+      
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del usuario que se quiere obtener
+      
+      responses:
+        '200':
+          description: Detalles del usuario
+          # Descripción de la respuesta para el código de estado 200 (OK)
+          content:
+            application/json:
+              # Tipo de contenido de la respuesta: JSON
+              example:
+                id: 1
+                username: usuario1
+                email: usuario1@example.com
+                # Ejemplo de cómo debería verse la respuesta en formato JSON
+        '404':
+          description: Usuario no encontrado
+          # Descripción de la respuesta para el código de estado 404 (Not Found)
+          content:
+            application/json:
+              # Tipo de contenido de la respuesta: JSON
+              example:
+                message: El usuario no existe
+                # Ejemplo de cómo debería verse la respuesta en formato JSON
+        '500':
+          description: Error en el servidor
+          # Descripción de la respuesta para el código de estado 500 (Error en el servidor)
+
+  # Ruta del endpoint: /actualizar_usuario
+  /actualizacion_usuario:
+    put:
+      # Método HTTP utilizado: PUT
+      summary: Actualizar usuario
+      # Resumen del propósito del endpoint
+      description: Actualiza el correo electrónico del usuario autenticado.
+      # Descripción más detallada del propósito del endpoint
+      
+      security:
+        - jwt: []
+        # Se requiere un token JWT para acceder al endpoint
+        
+      requestBody:
+        required: true
+        # El cuerpo de la solicitud es obligatorio
+        content:
+          application/json:
+            # Tipo de contenido de la solicitud: JSON
+            schema:
+              type: object
+              # El cuerpo de la solicitud es un objeto JSON
+              properties:
+                new_email:
+                  type: string
+                  # La propiedad 'new_email' es de tipo cadena (string)
+                  description: Nuevo correo electrónico del usuario
+                  # Descripción de la propiedad
+                  format: email
+                  # Se espera que el valor tenga formato de dirección de correo electrónico
+                  example: nuevo_usuario@example.com
+                  # Ejemplo de cómo debería verse la propiedad en la solicitud
+              required:
+                - new_email
+                # El campo 'new_email' es requerido en la solicitud
+      
+      responses:
+        '200':
+          description: Usuario actualizado exitosamente
+          # Descripción de la respuesta para el código de estado 200 (OK)
+          content:
+            application/json:
+              # Tipo de contenido de la respuesta: JSON
+              example:
+                mensaje: Usuario actualizado exitosamente
+                # Ejemplo de cómo debería verse la respuesta en formato JSON
+        '401':
+          description: No autorizado (token JWT inválido o caducado)
+          # Descripción de la respuesta para el código de estado 401 (No autorizado)
+        '500':
+          description: Error en el servidor
+          # Descripción de la respuesta para el código de estado 500 (Error en el servidor)
+  
+  /eliminacion_usuario:
+    # Ruta del endpoint: /eliminacion_usuario
+    delete:
+      # Método HTTP utilizado: DELETE
+      summary: Eliminar usuario
+      # Resumen del propósito del endpoint
+      description: Elimina el usuario autenticado.
+      # Descripción más detallada del propósito del endpoint
+      
+      security:
+        - jwt: []
+        # Se requiere un token JWT para acceder al endpoint
+        
+      responses:
+        '200':
+          description: Usuario eliminado exitosamente
+          # Descripción de la respuesta para el código de estado 200 (OK)
+          content:
+            application/json:
+              # Tipo de contenido de la respuesta: JSON
+              example:
+                mensaje: Usuario eliminado exitosamente
+                # Ejemplo de cómo debería verse la respuesta en formato JSON
+        '401':
+          description: No autorizado (token JWT inválido o caducado)
+          # Descripción de la respuesta para el código de estado 401 (No autorizado)
+        '404':
+          description: Usuario no encontrado
+          # Descripción de la respuesta para el código de estado 404 (Not Found)
+        '500':
+          description: Error en el servidor
+          # Descripción de la respuesta para el código de estado 500 (Error en el servidor)
+
+  
+
+
+components:  # Componentes reutilizables
+  securitySchemes:  # Esquemas de seguridad definidos
+    BearerAuth:  # Nombre del esquema
+      type: http  # Tipo de esquema: HTTP
+      scheme: bearer  # Tipo de autenticación: bearer token
+      bearerFormat: JWT  # Formato del token: JWT
+
+

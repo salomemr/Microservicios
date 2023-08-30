@@ -1,0 +1,99 @@
+openapi: 3.0.0
+info:
+  title: User Authentication API
+  version: 1.0.0
+paths:
+  /register:
+    post:
+      summary: Registrar un nuevo usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                email:
+                  type: string
+              required:
+                - username
+                - password
+                - email
+      responses:
+        '201':
+          description: Usuario registrado exitosamente
+      tags:
+        - Usuarios
+  /users/{user_id}:
+    get:
+      summary: Obtener información de un usuario
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Información del usuario
+          content:
+            application/json:
+              example:
+                id: 1
+                username: example_user
+                email: user@example.com
+        '404':
+          description: El usuario no existe
+      tags:
+        - Usuarios
+    put:
+      summary: Actualizar información de un usuario
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+              required:
+                - username
+                - email
+      responses:
+        '200':
+          description: Usuario actualizado exitosamente
+        '500':
+          description: Error del servidor
+      tags:
+        - Usuarios
+    delete:
+      summary: Eliminar un usuario
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Usuario eliminado exitosamente
+        '500':
+          description: Error del servidor
+      tags:
+        - Usuarios
+tags:
+  - name: Usuarios
+    description: Operaciones relacionadas con usuarios
